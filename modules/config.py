@@ -3,8 +3,8 @@
 import logging
 
 from argparse import Namespace
-from oci.config import from_file
-from oci.auth.signers import InstancePrincipalsSecurityTokenSigner
+
+from modules.utilities import Utilities
 
 
 class Config:
@@ -13,7 +13,7 @@ class Config:
         self.args = args
         self.set_config()
         self.log.debug(f'Initializing Config object: {self}')
-        self.config, self.signer = self.set_signer(args)
+        self.profile, self.signer = self.set_signer(args)
         
 
     # Set dependencies
@@ -25,19 +25,10 @@ class Config:
         else:
             logging.basicConfig(level=logging.INFO)
 
+        # Set logging on Utilities
+        Utilities()
+
     def set_signer(self, args: Namespace) -> dict | None:
-        if args.auth == None:
-            self.log.debug(f'Creating signer from profile {args.profile}')
-            config = from_file(profile_name=args.profile, file_location=args.config)
-            self.log.debug(f'Config: {config}')
-            return config, None
-        elif args.auth == 'instance_principal':
-            self.log.debug('Creating signer from instance principal')
-            signer = InstancePrincipalsSecurityTokenSigner(log_requests=args.debug)
-            self.log.debug(f'Signer: {signer}')
-            return {}, signer
+        cfg, signer = Utilities.create_signer(args.auth, profile=args.profile)
+        return cfg, signer
         
-    def get_regions(self):
-        pass
-    # Signer.tenancy_id root compartment ocid?
-    # Config file uses "tenancy"

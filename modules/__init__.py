@@ -1,3 +1,2 @@
-from config import Config
-from search import Search
-from utilities import Utilities
+from modules.config import Config
+from modules.search import Search
